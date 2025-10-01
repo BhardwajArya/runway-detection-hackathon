@@ -1,0 +1,15 @@
+# create or empty file first
+grep -oP '(?<=FAILED ).*(?= missing LEDG/REDG)' json_to_masks.py || true
+# safer: re-run small parser to list images missing LEDG/REDG
+python - <<'PY'
+import json
+p="/Users/anandjha/Downloads/archive/labels/labels/lines/train_labels_640x360.json"
+data=json.load(open(p))
+bad=[]
+for k,v in data.items():
+    labels=[it.get('label') for it in v if isinstance(it,dict)]
+    if not any(l in ('LEDG','REDG','ledg','redg','LeftEdge','RightEdge') for l in labels):
+        bad.append(k)
+open('failed_files_train.txt','w').write('\n'.join(bad))
+print("Wrote failed_files_train.txt with", len(bad), "entries")
+PY
